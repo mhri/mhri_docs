@@ -25,6 +25,7 @@ sHRI 프레임워크가 생성하는 소셜 이벤트의 목록은 아래와 같
 | 사람의 무관심 | `person-disengaged` | 관심 상태에 있던 사람이 다른 곳을 일정 시간 이상 바라봤을 때 |
 | 사용자 발화 시작 (입술 움직임) | `lip-talking-started` | 입술 움직임으로부터 발화 시작 시점이 감지되었을 때 |
 | 사용자 발화 종료 (입술 움직임) | `lip-talking-finished` | 입술 움직임으로부터 발화 종료 시점이 감지되었을 때 |
+| 기억 회상 | `memory_recalled` | 사용자의 신원을 인식하여 경험 기억 내용을 회상했을 때 |
 
 ## 이벤트 활용 가이드
 
@@ -210,3 +211,31 @@ sHRI 프레임워크는 사람의 얼굴에 그 사람을 구별하는 고유 �
 - 반갑습니다!
 < topic
 ```
+
+### 기억 회상: `memory_recalled` 이벤트
+
+#### 소개
+사용자의 얼굴을 기반으로 초구면을 구분하여 구면인 경우 해당 사용자에 대한 경험 기억을 회상한다.
+
+이 두 이벤트의 카테고리는 `memory_recall` 이다.
+
+#### 이벤트 데이터
+이 이벤트의 이벤트 데이터는 신원 아이디인 `person_id`, 안경 착용 여부를 나타내는 `eyeglasses`, 머리카락 길이를 나타내는 `hair_style`, 상의 색상을 나타내는 `cloth_color`, 실명을 나타내는 `name`을 포함한다. 각 필드는 해당 사용자와 경험을 통해 선호 정보를 추출한 결과이다. 즉, `hair_style` 필드의 값이 `long`이면 해당 사용자가 긴 머리였던 사례가 대다수였음을 가리킨다.
+
+다음 예제는 사용자가 안경을 쓰는 사람인지 기억을 통해 확인하고 반응하는 스크립트이다.
+```
++ next1
+* <mget memory_recall/eyeglasses[person_id=<get person_id>]> == 2 
+  => 안경을 안쓰시죠? {@next2}
+* <mget memory_recall/eyeglasses[person_id=<get person_id>]> == 1
+  => 안경을 쓰시죠? {@next2}
+* <mget memory_recall/eyeglasses[person_id=<get person_id>]> == 0 
+  => 흠... 안경을 쓰셨는지 잘 모르겠네요. {@next2}
+
++ next2
+* <mget memory_recall/eyeglasses[person_id=<get person_id>]> == <get eyeglasses> 
+  => 오늘도 똑같네요.
+* <mget memory_recall/eyeglasses[person_id=<get person_id>]> != <get eyeglasses>
+  => 오늘은 다르시네요.
+```
+
